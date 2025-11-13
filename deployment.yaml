@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlops-major
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mlops-major
+  template:
+    metadata:
+      labels:
+        app: mlops-major
+    spec:
+      containers:
+      - name: mlops-major
+        image: aman199107/mlops-major-assignment-g24ai2085:dev
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlops-major-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mlops-major
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000

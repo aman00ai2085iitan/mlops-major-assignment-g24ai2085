@@ -1,38 +1,30 @@
 # train.py
-# Trains a DecisionTreeClassifier on sklearn's Olivetti faces dataset
-# Saves model as 'savedmodel.pth' (as required by assignment)
-
+import joblib
 from sklearn.datasets import fetch_olivetti_faces
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
-import joblib
 import numpy as np
+import os
 
 def main():
     data = fetch_olivetti_faces()
-    X = data.images  # shape (400, 64, 64)
-    y = data.target  # shape (400,)
+    X = data.data  # flattened images (400, 4096)
+    y = data.target
+    # split 70% train, 30% test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42, stratify=y)
+    model = DecisionTreeClassifier(random_state=42)
+    model.fit(X_train, y_train)
 
-    # Flatten images to 1D vectors (required for scikit-learn classifiers)
-    X_flat = X.reshape((X.shape[0], -1))
+    # save model and test set for testing later
+    os.makedirs("artifacts", exist_ok=True)
+    joblib.dump(model, "artifacts/savedmodel.pth", compress=3)  # compress level 3
+    # save test split for test.py
+    joblib.dump((X_test, y_test), "artifacts/test_split.pth", compress=3)
 
-    # 70% train, 30% test
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_flat, y, test_size=0.30, random_state=42, stratify=y
-    )
+    # print train accuracy for quick info
+    preds = model.predict(X_train)
+    print("Train accuracy:", accuracy_score(y_train, preds))
 
-    clf = DecisionTreeClassifier(random_state=42)
-    clf.fit(X_train, y_train)
-
-    # save model to savedmodel.pth (assignment requires this filename)
-    joblib.dump(clf, "savedmodel.pth")
-
-    # Optionally print training accuracy
-    train_acc = accuracy_score(y_train, clf.predict(X_train))
-    test_acc = accuracy_score(y_test, clf.predict(X_test))
-    print(f"Training accuracy: {train_acc:.4f}")
-    print(f"Test accuracy: {test_acc:.4f}")
-
-    # Save the dataset split indices so test.py can reproduce the test split deterministically
-    np.savez("tes
+if __name__ == "__main__":
+    main()
