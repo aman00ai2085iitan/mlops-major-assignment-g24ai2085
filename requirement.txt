@@ -1,1 +1,11 @@
 
+flask
+gunicorn
+scikit-learn
+joblib
+numpy
+pandas
+matplotlib
+pillow
+Flask==3.0.3
+gunicorn==21.2.0
